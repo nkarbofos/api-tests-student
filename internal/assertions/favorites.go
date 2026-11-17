@@ -1,0 +1,33 @@
+package assertions
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"api-tests-template/internal/managers/favorites/models"
+)
+
+// FavoritesContainAdvertisement проверяет, что объявление есть в списке избранного
+func FavoritesContainAdvertisement(t *testing.T, items []models.FavoriteItem, advertisementId string) {
+	t.Helper()
+
+	for _, item := range items {
+		if item.Advertisement.Id == advertisementId {
+			return
+		}
+	}
+
+	require.Failf(t, "объявление не найдено в избранном", "ожидали объявление с id %q среди %d записей избранного", advertisementId, len(items))
+}
+
+// FavoritesDoNotContainAdvertisement проверяет, что объявления нет в списке избранного
+func FavoritesDoNotContainAdvertisement(t *testing.T, items []models.FavoriteItem, advertisementId string) {
+	t.Helper()
+
+	for _, item := range items {
+		if item.Advertisement.Id == advertisementId {
+			require.Failf(t, "объявление осталось в избранном", "не ожидали объявление с id %q среди %d записей избранного", advertisementId, len(items))
+		}
+	}
+}

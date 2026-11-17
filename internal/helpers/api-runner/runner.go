@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 
 	"github.com/steinfletcher/apitest"
 )
@@ -13,6 +14,12 @@ import (
 const (
 	defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 )
+
+// defaultHTTPClient клиент с повторными попытками при временных ошибках сервера
+var defaultHTTPClient = &http.Client{
+	Transport: &retryTransport{transport: http.DefaultTransport},
+	Timeout:   60 * time.Second,
+}
 
 type ApiTest struct {
 	token     string
@@ -38,7 +45,7 @@ func (at *ApiTest) Auth(token string) *ApiTest {
 }
 
 func (at *ApiTest) Create() *apitest.APITest {
-	apitestNew := apitest.New().EnableNetworking()
+	apitestNew := apitest.New().EnableNetworking(defaultHTTPClient)
 	if os.Getenv("DEBUG") == "true" {
 		apitestNew = apitestNew.Debug()
 	}

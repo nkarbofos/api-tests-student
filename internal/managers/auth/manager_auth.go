@@ -33,3 +33,18 @@ func Login(t *testing.T, username, password string) models.LoginOkResponse {
 
 	return loginResponse
 }
+
+// Register регистрирует нового пользователя и возвращает токен с данными пользователя, ожидает 201
+func Register(t *testing.T, request models.RegisterRequest) models.LoginOkResponse {
+	registerRawResponse := auth.HttpPostAuthRegister(t, request)
+	defer registerRawResponse.Body.Close()
+
+	respArray, errResponse := io.ReadAll(registerRawResponse.Body)
+	require.NoError(t, errResponse)
+
+	registerResponse := models.LoginOkResponse{}
+	require.NoErrorf(t, json.Unmarshal(respArray, &registerResponse), "не удалось разобрать тело ответа: %s", string(respArray))
+	require.NotEmpty(t, registerResponse.Token, "токен зарегистрированного пользователя пуст")
+
+	return registerResponse
+}
