@@ -19,7 +19,7 @@ const (
 	userPasswordRandomLength = 13
 	fixturePrice             = 100.0
 	fixtureQuantity          = 1
-	fixtureDescription       = "Объявление, созданное тестовой фикстурой"
+	fixtureDescription       = "Advertisement created by test fixture"
 )
 
 // RegisterTestUser регистрирует отдельного тестового пользователя и возвращает токен с данными пользователя

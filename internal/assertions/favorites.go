@@ -18,7 +18,7 @@ func FavoritesContainAdvertisement(t *testing.T, items []models.FavoriteItem, ad
 		}
 	}
 
-	require.Failf(t, "объявление не найдено в избранном", "ожидали объявление с id %q среди %d записей избранного", advertisementId, len(items))
+	require.Failf(t, "advertisement not found in favorites", "expected advertisement with id %q among %d favorite entries", advertisementId, len(items))
 }
 
 // FavoritesDoNotContainAdvertisement проверяет, что объявления нет в списке избранного
@@ -27,7 +27,7 @@ func FavoritesDoNotContainAdvertisement(t *testing.T, items []models.FavoriteIte
 
 	for _, item := range items {
 		if item.Advertisement.Id == advertisementId {
-			require.Failf(t, "объявление осталось в избранном", "не ожидали объявление с id %q среди %d записей избранного", advertisementId, len(items))
+			require.Failf(t, "advertisement is still in favorites", "did not expect advertisement with id %q among %d favorite entries", advertisementId, len(items))
 		}
 	}
 }

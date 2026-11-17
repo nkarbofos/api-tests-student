@@ -33,11 +33,11 @@ func CreateAdvertisement(t *testing.T, token string, request models.Advertisemen
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	advertisement := models.Advertisement{}
 	if expectedStatusCode == http.StatusCreated {
-		require.NoErrorf(t, json.Unmarshal(body, &advertisement), "не удалось разобрать тело ответа: %s", string(body))
+		require.NoErrorf(t, json.Unmarshal(body, &advertisement), "failed to parse response body: %s", string(body))
 	}
 
 	return advertisement, string(body)
@@ -50,11 +50,11 @@ func GetAdvertisement(t *testing.T, token, advertisementId string, expectedStatu
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	advertisement := models.Advertisement{}
 	if expectedStatusCode == http.StatusOK {
-		require.NoErrorf(t, json.Unmarshal(body, &advertisement), "не удалось разобрать тело ответа: %s", string(body))
+		require.NoErrorf(t, json.Unmarshal(body, &advertisement), "failed to parse response body: %s", string(body))
 	}
 
 	return advertisement, string(body)
@@ -67,11 +67,11 @@ func GetAdvertisementPhotos(t *testing.T, token, advertisementId string, expecte
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	photos := []models.Photo{}
 	if expectedStatusCode == http.StatusOK {
-		require.NoErrorf(t, json.Unmarshal(body, &photos), "не удалось разобрать тело ответа: %s", string(body))
+		require.NoErrorf(t, json.Unmarshal(body, &photos), "failed to parse response body: %s", string(body))
 	}
 
 	return photos, string(body)
@@ -84,7 +84,7 @@ func DeleteAdvertisement(t *testing.T, token, advertisementId string, expectedSt
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	return string(body)
 }
@@ -97,5 +97,5 @@ func DeleteAdvertisementIfExists(t *testing.T, token, advertisementId string) {
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
 	require.Containsf(t, []int{http.StatusNoContent, http.StatusForbidden, http.StatusNotFound}, raw.StatusCode,
-		"ожидали 204, 403 или 404 при удалении объявления, получен %d, тело ответа: %s", raw.StatusCode, string(body))
+		"expected 204, 403 or 404 when deleting advertisement, got %d, response body: %s", raw.StatusCode, string(body))
 }

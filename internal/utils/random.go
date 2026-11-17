@@ -13,7 +13,7 @@ func RandomString(length int) string {
 	for i := range b {
 		randCharsetIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			panic(fmt.Sprintf("Не удалось сгенерировать случайное число: %s", err.Error()))
+			panic(fmt.Sprintf("failed to generate random number: %s", err.Error()))
 		}
 		b[i] = charset[randCharsetIndex.Int64()]
 	}

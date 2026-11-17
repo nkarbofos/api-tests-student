@@ -36,13 +36,13 @@ func TestSuiteRun(t *testing.T) {
 func (s *TestSuite) SetupSuite() {
 	base.SetupSuite()
 
-	base.Precondition("Проверяем, что константы тестовых данных заданы")
-	require.NotEmpty(s.T(), existingAdTitle, "задайте existingAdTitle")
-	require.NotEmpty(s.T(), searchBeginning, "задайте searchBeginning")
-	require.NotEmpty(s.T(), searchMiddle, "задайте searchMiddle")
-	require.NotEmpty(s.T(), searchEnd, "задайте searchEnd")
+	base.Precondition("Checking that test data constants are set")
+	require.NotEmpty(s.T(), existingAdTitle, "set existingAdTitle")
+	require.NotEmpty(s.T(), searchBeginning, "set searchBeginning")
+	require.NotEmpty(s.T(), searchMiddle, "set searchMiddle")
+	require.NotEmpty(s.T(), searchEnd, "set searchEnd")
 
-	base.Precondition("Авторизация пользователя с кредами из переменных окружения")
+	base.Precondition("Authorizing user with credentials from environment variables")
 	s.loginData = auth.Login(s.T(), os.Getenv("TEST_LOGIN"), os.Getenv("TEST_PASSWORD"))
 }
 
@@ -53,11 +53,11 @@ func (s *TestSuite) TearDownSuite() {
 func (s *TestSuite) TestSearchByTitle() {
 	list := advList.GetAdvertisementsList(s.T(), s.loginData.Token, searchMiddle)
 
-	s.Run("В ответе есть хотя бы одно объявление", func() {
+	s.Run("Response is not empty", func() {
 		require.NotEmpty(s.T(), list.Items)
 	})
 
-	s.Run("Среди найденных есть наше объявление", func() {
+	s.Run("Found advertisement is present", func() {
 		assertions.ContainsAdvertisementByTitle(s.T(), list.Items, existingAdTitle)
 	})
 }
@@ -67,12 +67,12 @@ func (s *TestSuite) TestSearchByTitle_Substring() {
 		name   string
 		search string
 	}{
-		{"начало", searchBeginning},
-		{"середина", searchMiddle},
-		{"конец", searchEnd},
-		{"нижний регистр", strings.ToLower(searchMiddle)},
-		{"верхний регистр", strings.ToUpper(searchMiddle)},
-		{"смешанный регистр", utils.MixCase(searchMiddle)},
+		{"beginning", searchBeginning},
+		{"middle", searchMiddle},
+		{"end", searchEnd},
+		{"lowercase", strings.ToLower(searchMiddle)},
+		{"uppercase", strings.ToUpper(searchMiddle)},
+		{"mixed case", utils.MixCase(searchMiddle)},
 	}
 
 	for _, tc := range cases {

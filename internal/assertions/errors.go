@@ -11,6 +11,6 @@ import (
 func ErrorResponseMatches(t *testing.T, body, expectedError, expectedMessage string) {
 	t.Helper()
 
-	require.Equal(t, expectedError, gjson.Get(body, "error").String(), "некорректный код ошибки, тело ответа: %s", body)
-	require.Equal(t, expectedMessage, gjson.Get(body, "message").String(), "некорректный текст ошибки, тело ответа: %s", body)
+	require.Equal(t, expectedError, gjson.Get(body, "error").String(), "unexpected error code, response body: %s", body)
+	require.Equal(t, expectedMessage, gjson.Get(body, "message").String(), "unexpected error message, response body: %s", body)
 }

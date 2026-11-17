@@ -19,11 +19,11 @@ func AddFavorite(t *testing.T, token, advertisementId string, expectedStatusCode
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	favorite := models.FavoriteItem{}
 	if expectedStatusCode == http.StatusCreated {
-		require.NoErrorf(t, json.Unmarshal(body, &favorite), "не удалось разобрать тело ответа: %s", string(body))
+		require.NoErrorf(t, json.Unmarshal(body, &favorite), "failed to parse response body: %s", string(body))
 	}
 
 	return favorite, string(body)
@@ -36,11 +36,11 @@ func GetFavorites(t *testing.T, token, search string, expectedStatusCode int) (m
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	favoritesList := models.FavoriteListResponse{}
 	if expectedStatusCode == http.StatusOK {
-		require.NoErrorf(t, json.Unmarshal(body, &favoritesList), "не удалось разобрать тело ответа: %s", string(body))
+		require.NoErrorf(t, json.Unmarshal(body, &favoritesList), "failed to parse response body: %s", string(body))
 	}
 
 	return favoritesList, string(body)
@@ -53,7 +53,7 @@ func DeleteFavorite(t *testing.T, token, advertisementId string, expectedStatusC
 
 	body, err := io.ReadAll(raw.Body)
 	require.NoError(t, err)
-	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code должен быть %d, тело ответа: %s", expectedStatusCode, string(body))
+	require.Equalf(t, expectedStatusCode, raw.StatusCode, "HTTP status code should be %d, response body: %s", expectedStatusCode, string(body))
 
 	return string(body)
 }

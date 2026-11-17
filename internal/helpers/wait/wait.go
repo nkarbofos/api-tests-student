@@ -19,5 +19,5 @@ func Until(t *testing.T, timeout time.Duration, description string, check func()
 		time.Sleep(pollInterval)
 	}
 
-	t.Fatalf("%s за %s", description, timeout)
+	t.Fatalf("%s within %s", description, timeout)
 }

@@ -25,7 +25,7 @@ func LoadSpecificEnvFile(envFile string) {
 	}
 
 	if err != nil {
-		panic(fmt.Sprintf("Задан env файл %s, но его не удалось загрузить: %s", envFile, err.Error()))
+		panic(fmt.Sprintf("env file %s is set but could not be loaded: %s", envFile, err.Error()))
 	}
 }
 

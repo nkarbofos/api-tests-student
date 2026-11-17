@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	advertisementDescription = "Объявление, созданное в позитивном сценарии"
+	advertisementDescription = "Advertisement created in positive scenario"
 	advertisementPrice       = 1234.5
 	advertisementQuantity    = 7
 	photoCount               = 2
@@ -42,7 +42,7 @@ func TestSuiteRun(t *testing.T) {
 func (s *TestSuite) SetupSuite() {
 	base.SetupSuite()
 
-	base.Precondition("Регистрация отдельного тестового пользователя для сценария")
+	base.Precondition("Registering a separate test user for the scenario")
 	s.loginData = fixtures.RegisterTestUser(s.T())
 }
 
@@ -61,42 +61,42 @@ func (s *TestSuite) TestCreateAdvertisementWithAllParameters() {
 		Photos:      photos.CreateTempPNGs(s.T(), photoCount),
 	}
 
-	base.Precondition("Создание объявления со всеми возможными параметрами")
-	base.Step("POST /advertisement с title, description, price, quantity и фотографиями")
+	base.Precondition("Creating advertisement with all possible parameters")
+	base.Step("POST /advertisement with title, description, price, quantity and photos")
 	created, createBody := advertisements.CreateAdvertisement(s.T(), s.loginData.Token, request, http.StatusCreated)
 
 	s.T().Cleanup(func() {
 		if created.Id == "" {
 			return
 		}
-		base.Precondition("Очистка: удаление созданного объявления")
+		base.Precondition("Cleanup: deleting created advertisement")
 		advertisements.DeleteAdvertisementIfExists(s.T(), s.loginData.Token, created.Id)
 	})
 
-	require.NotEmpty(s.T(), created.Id, "id созданного объявления пуст; тело ответа: %s", createBody)
-	require.Equal(s.T(), s.loginData.User.Id, created.UserId, "user_id созданного объявления не совпадает с текущим пользователем")
-	require.Len(s.T(), created.Photos, photoCount, "количество фотографий в ответе на создание не совпадает")
-	base.Check(fmt.Sprintf("Объявление создано: id=%s", created.Id))
+	require.NotEmpty(s.T(), created.Id, "created advertisement id is empty; response body: %s", createBody)
+	require.Equal(s.T(), s.loginData.User.Id, created.UserId, "created advertisement user_id does not match current user")
+	require.Len(s.T(), created.Photos, photoCount, "photos count in create response does not match")
+	base.Check(fmt.Sprintf("Advertisement created: id=%s", created.Id))
 
-	s.Run("Объявление доступно через GET /advertisement", func() {
+	s.Run("Advertisement is available by id", func() {
 		base.Step(fmt.Sprintf("GET /advertisement?id=%s", created.Id))
 		fetched, fetchedBody := advertisements.GetAdvertisement(s.T(), s.loginData.Token, created.Id, http.StatusOK)
 
-		require.Equal(s.T(), created.Id, fetched.Id, "id полученного объявления не совпадает; тело ответа: %s", fetchedBody)
-		require.Equal(s.T(), s.loginData.User.Id, fetched.UserId, "user_id полученного объявления не совпадает")
+		require.Equal(s.T(), created.Id, fetched.Id, "fetched advertisement id does not match; response body: %s", fetchedBody)
+		require.Equal(s.T(), s.loginData.User.Id, fetched.UserId, "fetched advertisement user_id does not match")
 		assertions.AdvertisementMatchesCreateRequest(s.T(), fetched, request)
 
 		for index, photo := range fetched.Photos {
-			require.NotEmpty(s.T(), photo.Url, "url фотографии %d пуст", index)
+			require.NotEmpty(s.T(), photo.Url, "photo %d url is empty", index)
 		}
 
-		base.Check("Параметры объявления совпадают с переданными при создании")
+		base.Check("Advertisement parameters match the create request")
 	})
 
-	s.Run("Объявление появляется в поиске по полному названию", func() {
+	s.Run("Advertisement is found by full title", func() {
 		base.Step(fmt.Sprintf("GET /advertisements?search=%s", request.Title))
 
-		wait.Until(s.T(), searchWaitTimeout, fmt.Sprintf("объявление %s не появилось в поиске по названию %q", created.Id, request.Title), func() bool {
+		wait.Until(s.T(), searchWaitTimeout, fmt.Sprintf("advertisement %s did not appear in search by title %q", created.Id, request.Title), func() bool {
 			list := advertisements.GetAdvertisementsList(s.T(), s.loginData.Token, request.Title)
 			for _, item := range list.Items {
 				if item.Id == created.Id && item.Title == request.Title {
@@ -106,19 +106,19 @@ func (s *TestSuite) TestCreateAdvertisementWithAllParameters() {
 			return false
 		})
 
-		base.Check("Объявление найдено в поиске по полному названию")
+		base.Check("Advertisement found in search by full title")
 	})
 
-	s.Run("Фотографии доступны через GET /advertisements/{id}/photos", func() {
+	s.Run("Photos are available", func() {
 		base.Step(fmt.Sprintf("GET /advertisements/%s/photos", created.Id))
 		advertisementPhotos, photosBody := advertisements.GetAdvertisementPhotos(s.T(), s.loginData.Token, created.Id, http.StatusOK)
-		require.Len(s.T(), advertisementPhotos, photoCount, "количество фотографий не совпадает; тело ответа: %s", photosBody)
+		require.Len(s.T(), advertisementPhotos, photoCount, "photos count does not match; response body: %s", photosBody)
 
 		for index, photo := range advertisementPhotos {
-			require.NotEmpty(s.T(), photo.Id, "id фотографии %d пуст", index)
-			require.NotEmpty(s.T(), photo.Url, "url фотографии %d пуст", index)
+			require.NotEmpty(s.T(), photo.Id, "photo %d id is empty", index)
+			require.NotEmpty(s.T(), photo.Url, "photo %d url is empty", index)
 		}
 
-		base.Check("Все загруженные фотографии доступны на сервере")
+		base.Check("All uploaded photos are available on the server")
 	})
 }

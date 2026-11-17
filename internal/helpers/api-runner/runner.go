@@ -54,7 +54,7 @@ func (at *ApiTest) Create() *apitest.APITest {
 			request.Header.Set("User-Agent", at.userAgent)
 
 			if err := mergeServiceUrls(at.host, request.URL); err != nil {
-				panic(fmt.Sprintf("Не удалось применить хост из API_URL: %s", err.Error()))
+				panic(fmt.Sprintf("failed to apply host from API_URL: %s", err.Error()))
 			}
 
 			if len(at.token) != 0 {
@@ -65,7 +65,7 @@ func (at *ApiTest) Create() *apitest.APITest {
 
 func mergeServiceUrls(host string, r *url.URL) error {
 	if host == "" {
-		return fmt.Errorf("API_URL не задан: проверьте переменные окружения")
+		return fmt.Errorf("API_URL is not set: check environment variables")
 	}
 
 	urlParsed, err := url.Parse(host)

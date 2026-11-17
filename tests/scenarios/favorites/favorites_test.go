@@ -41,7 +41,7 @@ func TestSuiteRun(t *testing.T) {
 func (s *TestSuite) SetupSuite() {
 	base.SetupSuite()
 
-	base.Precondition("Авторизация пользователя с кредами из переменных окружения")
+	base.Precondition("Authorizing user with credentials from environment variables")
 	s.loginData = auth.Login(s.T(), os.Getenv("TEST_LOGIN"), os.Getenv("TEST_PASSWORD"))
 }
 
@@ -62,9 +62,9 @@ func containsFavorite(items []favoriteModels.FavoriteItem, advertisementId strin
 // waitForFavoriteState ждёт, пока объявление появится или исчезнет в избранном, и возвращает последний полученный список
 func (s *TestSuite) waitForFavoriteState(title, advertisementId string, expectedPresent bool) []favoriteModels.FavoriteItem {
 	var items []favoriteModels.FavoriteItem
-	description := fmt.Sprintf("объявление %s не появилось в избранном", advertisementId)
+	description := fmt.Sprintf("advertisement %s did not appear in favorites", advertisementId)
 	if !expectedPresent {
-		description = fmt.Sprintf("объявление %s не исчезло из избранного", advertisementId)
+		description = fmt.Sprintf("advertisement %s did not disappear from favorites", advertisementId)
 	}
 
 	wait.Until(s.T(), favoritesWaitTimeout, description, func() bool {
@@ -79,60 +79,60 @@ func (s *TestSuite) waitForFavoriteState(title, advertisementId string, expected
 func (s *TestSuite) TestFavoritesFullCycle() {
 	title := fmt.Sprintf("Autotest favorite %s", utils.RandomString(favoriteTitleRandomLength))
 
-	base.Precondition("Создание объявления от имени отдельного тестового пользователя")
+	base.Precondition("Creating advertisement as a separate test user")
 	foreignAdvertisement, ownerToken := fixtures.CreateForeignAdvertisement(s.T(), title)
-	base.Check(fmt.Sprintf("Объявление фикстуры создано: id=%s", foreignAdvertisement.Id))
+	base.Check(fmt.Sprintf("Fixture advertisement created: id=%s", foreignAdvertisement.Id))
 
-	s.Run("Объявление добавляется в избранное", func() {
-		base.Step(fmt.Sprintf("POST /favorites с advertisement_id=%s", foreignAdvertisement.Id))
+	s.Run("Add advertisement to favorites", func() {
+		base.Step(fmt.Sprintf("POST /favorites with advertisement_id=%s", foreignAdvertisement.Id))
 		favorite, body := favoritesManager.AddFavorite(s.T(), s.loginData.Token, foreignAdvertisement.Id, http.StatusCreated)
 
-		require.Equal(s.T(), foreignAdvertisement.Id, favorite.Advertisement.Id, "advertisement_id в ответе не совпадает; тело ответа: %s", body)
-		require.NotEmpty(s.T(), favorite.FavoriteId, "favorite_id пуст; тело ответа: %s", body)
-		base.Check("Объявление добавлено в избранное")
+		require.Equal(s.T(), foreignAdvertisement.Id, favorite.Advertisement.Id, "advertisement_id in response does not match; response body: %s", body)
+		require.NotEmpty(s.T(), favorite.FavoriteId, "favorite_id is empty; response body: %s", body)
+		base.Check("Advertisement added to favorites")
 	})
 
-	s.Run("Добавленное объявление появляется в списке избранного", func() {
+	s.Run("Advertisement appears in favorites", func() {
 		base.Step(fmt.Sprintf("GET /favorites?search=%s", title))
 		items := s.waitForFavoriteState(title, foreignAdvertisement.Id, true)
 		assertions.FavoritesContainAdvertisement(s.T(), items, foreignAdvertisement.Id)
-		base.Check("Объявление найдено в списке избранного")
+		base.Check("Advertisement found in favorites")
 	})
 
-	s.Run("Объявление удаляется из избранного", func() {
+	s.Run("Remove advertisement from favorites", func() {
 		base.Step(fmt.Sprintf("DELETE /favorites/%s", foreignAdvertisement.Id))
 		favoritesManager.DeleteFavorite(s.T(), s.loginData.Token, foreignAdvertisement.Id, http.StatusNoContent)
-		base.Check("Ручка удаления из избранного вернула 204 No Content")
+		base.Check("Delete favorite endpoint returned 204 No Content")
 	})
 
-	s.Run("Удалённое объявление пропадает из списка избранного", func() {
+	s.Run("Removed advertisement disappears from favorites", func() {
 		base.Step(fmt.Sprintf("GET /favorites?search=%s", title))
 		items := s.waitForFavoriteState(title, foreignAdvertisement.Id, false)
 		assertions.FavoritesDoNotContainAdvertisement(s.T(), items, foreignAdvertisement.Id)
-		base.Check("Объявление отсутствует в списке избранного")
+		base.Check("Advertisement is absent from favorites")
 	})
 
-	s.Run("Повторное добавление объявления в избранное", func() {
-		base.Step(fmt.Sprintf("POST /favorites с advertisement_id=%s", foreignAdvertisement.Id))
+	s.Run("Add advertisement to favorites again", func() {
+		base.Step(fmt.Sprintf("POST /favorites with advertisement_id=%s", foreignAdvertisement.Id))
 		favoritesManager.AddFavorite(s.T(), s.loginData.Token, foreignAdvertisement.Id, http.StatusCreated)
-		base.Check("Объявление повторно добавлено в избранное")
+		base.Check("Advertisement added to favorites again")
 	})
 
-	s.Run("Удаление объявления владельцем", func() {
+	s.Run("Delete advertisement as owner", func() {
 		base.Step(fmt.Sprintf("DELETE /advertisement?id=%s", foreignAdvertisement.Id))
 		advertisements.DeleteAdvertisement(s.T(), ownerToken, foreignAdvertisement.Id, http.StatusNoContent)
-		base.Check("Объявление удалено владельцем")
+		base.Check("Advertisement deleted by owner")
 	})
 
-	s.Run("Объявление исчезает из избранного после удаления самого объявления", func() {
+	s.Run("Advertisement disappears from favorites after deletion", func() {
 		base.Step(fmt.Sprintf("GET /advertisement?id=%s", foreignAdvertisement.Id))
 		_, advertisementBody := advertisements.GetAdvertisement(s.T(), s.loginData.Token, foreignAdvertisement.Id, http.StatusNotFound)
 		assertions.ErrorResponseMatches(s.T(), advertisementBody, apierrors.NotFoundCode, apierrors.AdvertisementNotFoundMessage)
-		base.Check("Удалённое объявление недоступно через GET /advertisement")
+		base.Check("Deleted advertisement is unavailable via GET /advertisement")
 
 		base.Step(fmt.Sprintf("GET /favorites?search=%s", title))
 		items := s.waitForFavoriteState(title, foreignAdvertisement.Id, false)
 		assertions.FavoritesDoNotContainAdvertisement(s.T(), items, foreignAdvertisement.Id)
-		base.Check("Объявление отсутствует в избранном после удаления объявления")
+		base.Check("Advertisement is absent from favorites after deletion")
 	})
 }

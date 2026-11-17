@@ -15,7 +15,7 @@ func GetMyAdvertisements(t *testing.T, token string, expectedStatusCode int, lim
 	defer myAdvertisementsRawResponse.Body.Close()
 
 	require.Equalf(t, expectedStatusCode, myAdvertisementsRawResponse.StatusCode,
-		"HTTP status code должен быть %d", expectedStatusCode)
+		"HTTP status code should be %d", expectedStatusCode)
 
 	myAdvertisementsResponse, errResponse := io.ReadAll(myAdvertisementsRawResponse.Body)
 	require.NoError(t, errResponse)

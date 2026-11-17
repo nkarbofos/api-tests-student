@@ -13,8 +13,8 @@ import (
 
 // Login выполняет авторизацию пользователя и возвращает токен с данными пользователя, ожидает 200
 func Login(t *testing.T, username, password string) models.LoginOkResponse {
-	require.NotEmpty(t, username, "Отсутствует логин пользователя")
-	require.NotEmpty(t, password, "Отсутствует пароль пользователя")
+	require.NotEmpty(t, username, "username is empty")
+	require.NotEmpty(t, password, "password is empty")
 
 	request := models.LoginRequest{
 		Email:    username,
@@ -43,8 +43,8 @@ func Register(t *testing.T, request models.RegisterRequest) models.LoginOkRespon
 	require.NoError(t, errResponse)
 
 	registerResponse := models.LoginOkResponse{}
-	require.NoErrorf(t, json.Unmarshal(respArray, &registerResponse), "не удалось разобрать тело ответа: %s", string(respArray))
-	require.NotEmpty(t, registerResponse.Token, "токен зарегистрированного пользователя пуст")
+	require.NoErrorf(t, json.Unmarshal(respArray, &registerResponse), "failed to parse response body: %s", string(respArray))
+	require.NotEmpty(t, registerResponse.Token, "registered user token is empty")
 
 	return registerResponse
 }

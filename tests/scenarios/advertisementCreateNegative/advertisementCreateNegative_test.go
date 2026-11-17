@@ -23,7 +23,7 @@ import (
 
 const (
 	titleRandomLength       = 8
-	validDescription        = "Объявление для проверки валидации"
+	validDescription        = "Advertisement for validation checks"
 	validPrice              = 100.0
 	validQuantity           = 1
 	titleMaxLength          = 50
@@ -57,7 +57,7 @@ func TestSuiteRun(t *testing.T) {
 func (s *TestSuite) SetupSuite() {
 	base.SetupSuite()
 
-	base.Precondition("Авторизация пользователя с кредами из переменных окружения")
+	base.Precondition("Authorizing user with credentials from environment variables")
 	s.loginData = auth.Login(s.T(), os.Getenv("TEST_LOGIN"), os.Getenv("TEST_PASSWORD"))
 }
 
@@ -92,7 +92,7 @@ func requestWithMutation(t *testing.T, mutate func(*advertisementModels.Advertis
 }
 
 func (s *TestSuite) TestCreateAdvertisementValidation() {
-	base.Precondition("Подготовка набора запросов с некорректными параметрами объявления")
+	base.Precondition("Preparing requests with invalid advertisement parameters")
 
 	negativePrice := -1.0
 	tooBigPrice := 1000001.0
@@ -100,7 +100,7 @@ func (s *TestSuite) TestCreateAdvertisementValidation() {
 
 	cases := []validationCase{
 		{
-			name: "без обязательных параметров",
+			name: "missing required parameters",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Title = ""
 				request.Description = ""
@@ -109,56 +109,56 @@ func (s *TestSuite) TestCreateAdvertisementValidation() {
 			expectedMessage: emptyTitleMessage,
 		},
 		{
-			name: "пустой title",
+			name: "empty title",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Title = ""
 			}),
 			expectedMessage: emptyTitleMessage,
 		},
 		{
-			name: "пустой description",
+			name: "empty description",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Description = ""
 			}),
 			expectedMessage: emptyDescriptionMessage,
 		},
 		{
-			name: "слишком длинный title",
+			name: "title too long",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Title = strings.Repeat("a", titleMaxLength+excessTitleLength)
 			}),
 			expectedMessage: fmt.Sprintf("title must not exceed %d characters provided %d", titleMaxLength, titleMaxLength+excessTitleLength),
 		},
 		{
-			name: "отрицательная цена",
+			name: "negative price",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Price = &negativePrice
 			}),
 			expectedMessage: priceRangeMessage,
 		},
 		{
-			name: "цена выше максимальной",
+			name: "price above maximum",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Price = &tooBigPrice
 			}),
 			expectedMessage: priceRangeMessage,
 		},
 		{
-			name: "отрицательное количество",
+			name: "negative quantity",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Quantity = &negativeQuantity
 			}),
 			expectedMessage: quantityRangeMessage,
 		},
 		{
-			name: "без фотографий",
+			name: "no photos",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Photos = nil
 			}),
 			expectedMessage: noPhotosMessage,
 		},
 		{
-			name: "больше трёх фотографий",
+			name: "more than three photos",
 			request: requestWithMutation(s.T(), func(request *advertisementModels.AdvertisementCreateRequest) {
 				request.Photos = photos.CreateTempPNGs(s.T(), excessPhotoCount)
 			}),
@@ -171,23 +171,23 @@ func (s *TestSuite) TestCreateAdvertisementValidation() {
 			base.Step(fmt.Sprintf("POST /advertisement: %s", testCase.name))
 			_, body := advertisements.CreateAdvertisement(s.T(), s.loginData.Token, testCase.request, http.StatusBadRequest)
 			assertions.ErrorResponseMatches(s.T(), body, apierrors.InvalidRequestCode, testCase.expectedMessage)
-			base.Check("Получены ожидаемые код и текст ошибки")
+			base.Check("Expected error code and message received")
 		})
 	}
 }
 
 func (s *TestSuite) TestCreateAdvertisementWithoutToken() {
-	base.Precondition("Подготовка корректного запроса на создание объявления")
-	base.Step("POST /advertisement без заголовка Authorization")
+	base.Precondition("Preparing valid advertisement create request")
+	base.Step("POST /advertisement without Authorization header")
 	_, body := advertisements.CreateAdvertisement(s.T(), "", validAdvertisementRequest(s.T()), http.StatusUnauthorized)
 	assertions.ErrorResponseMatches(s.T(), body, apierrors.UnauthorizedCode, apierrors.AuthorizationHeaderRequiredMessage)
-	base.Check("Получен 401 Unauthorized с сообщением об отсутствии авторизации")
+	base.Check("Received 401 Unauthorized with missing authorization message")
 }
 
 func (s *TestSuite) TestCreateAdvertisementWithInvalidToken() {
-	base.Precondition("Подготовка корректного запроса на создание объявления")
-	base.Step("POST /advertisement с неверным токеном")
+	base.Precondition("Preparing valid advertisement create request")
+	base.Step("POST /advertisement with invalid token")
 	_, body := advertisements.CreateAdvertisement(s.T(), invalidToken, validAdvertisementRequest(s.T()), http.StatusUnauthorized)
 	assertions.ErrorResponseMatches(s.T(), body, apierrors.UnauthorizedCode, apierrors.InvalidAuthorizationMessage)
-	base.Check("Получен 401 Unauthorized с сообщением о неверном токене")
+	base.Check("Received 401 Unauthorized with invalid token message")
 }
